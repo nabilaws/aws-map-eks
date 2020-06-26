@@ -1,0 +1,36 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Description: An AWS solution to deploy tag automatically EKS resources (EC2 Fanilly) with MAP2.0
+Resources:
+  CWECatcher:
+    Type: 'AWS::Events::rule'
+    Properties:
+      Description: "EKS AutoScaling creation catcher"
+      EventPattern:
+        source:
+          - "aws.autoscaling"
+        detail-type:
+          -  "AWS API Call via CloudTrail"
+        detail:
+          eventSource:
+            - "autoscaling.amazonaws.com"
+          userIdentity:
+            invokedBy:
+              - "eks-nodegroup.amazonaws.com"
+      State: "ENABLED"
+      Targets:
+      Tags: 
+        - Key: 'map-migrated'
+          Value: ''
+        - Key: 'map-migrated-app'
+          Value: ''
+  LambdaPermission: 
+  Type: AWS::Lambda::Permission
+  Properties: 
+    FunctionName: 
+    Action: "lambda:InvokeFunction"
+    Principal: "events.amazonaws.com"
+    SourceArn: 
+      Fn::GetAtt: 
+        - "EventRule"
+        - "Arn"
