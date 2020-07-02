@@ -2,6 +2,18 @@ AWSTemplateFormatVersion: '2010-09-09'
 Transform: 'AWS::Serverless-2016-10-31'
 Description: An AWS solution to deploy tag automatically EKS resources (EC2 Fanilly) with MAP2.0
 Resources:
+  SAMEKS4MAP:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      Handler: 'MAP-EKS-TAG-Lambda::MAP_EKS_SAM_Lambda.Bootstrap::ExecuteFunction'
+      Runtime: dotnetcore3.1
+      CodeUri: 's3://migrationbootcamp/MAP-EKS-TAG-LAMBDA-v0.99.zip'
+      Description: 'Create a Custom Usage Report for MAP2.0'
+      MemorySize: 512
+      Timeout: 90
+      Role: !GetAtt CURLambdaRole.Arn
+      Policies:
+        - AWSLambdaExecute
   CWECatcher:
     Type: 'AWS::Events::Rule'
     Properties:

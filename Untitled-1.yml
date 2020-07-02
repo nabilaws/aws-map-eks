@@ -1,0 +1,610 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: 'Deployment for Migration Demo - Tag an AMI with Specified Tags to trigger the workflow - Including SSM Documents - CWE Rules'
+
+Parameters:
+
+  IAMAutomationRole:
+
+    Type: String
+
+    Description: 'Specify your IAM SSM Automation Role ARN'
+
+    Default: "arn:aws:iam::026158001388:role/SSM-Automation"
+
+Resources:
+
+  CWE1:
+
+    Type: 'AWS::Events::Rule'
+
+    Properties:
+
+      Description: 'Demo-Migration-Event-1'
+
+      Name: 'Demo-Migration-Event-1'
+
+      State: ENABLED
+
+      EventPattern:
+
+        source:
+
+          - aws.ec2
+
+        detail-type:
+
+          - AWS API Call via CloudTrail
+
+        detail:
+
+          eventSource:
+
+            - ec2.amazonaws.com
+
+          eventName:
+
+           - CreateTags
+
+          requestParameters:
+
+            tagSet:
+
+              items:
+
+                value:
+
+                  - Approved
+
+                key:
+
+                  - Name
+
+      Targets:
+
+        - Id: TargetId01
+
+          Arn: !Join
+
+            - ''
+
+            - - 'arn:aws:ssm:'
+
+              - !Ref 'AWS::Region'
+              - ':'
+
+              - !Ref 'AWS::AccountId'
+
+              - ':'
+
+              - automation-definition/
+
+              - !Ref MigrationDocument1
+
+          RoleArn: !GetAtt MyEventRole1.Arn
+
+          InputTransformer:
+
+            InputPathsMap:
+
+              WKSID: "$.detail.requestParameters.resourcesSet.items[0].resourceId"
+
+            InputTemplate: '{"WKS": [<WKSID>]}'
+
+  CWE2:
+
+    Type: 'AWS::Events::Rule'
+
+    Properties:
+
+      Description: 'Demo-Migration-Event-2'
+
+      Name: 'Demo-Migration-Event-2'
+
+      State: ENABLED
+
+      EventPattern:
+
+        source:
+
+          - aws.ec2
+
+        detail-type:
+
+          - AWS API Call via CloudTrail
+
+        detail:
+
+          eventSource:
+
+            - ec2.amazonaws.com
+
+          eventName:
+
+           - CreateTags
+
+          requestParameters:
+
+            tagSet:
+
+              items:
+
+                value:
+
+                  - wp-server-name
+
+                key:
+
+                  - Type
+
+      Targets:
+
+        - Id: TargetId02
+
+          Arn: !Join
+
+            - ''
+
+            - - 'arn:aws:ssm:'
+
+              - !Ref 'AWS::Region'
+
+              - ':'
+
+              - !Ref 'AWS::AccountId'
+
+              - ':'
+
+              - automation-definition/
+
+              - !Ref MigrationDocument2
+
+          RoleArn: !GetAtt MyEventRole2.Arn
+
+          InputTransformer:
+
+            InputPathsMap:
+
+              WKSID: "$.detail.requestParameters.resourcesSet.items[0].resourceId"
+
+            InputTemplate: '{"WKS": [<WKSID>]}'          
+
+  MigrationDocument1:
+
+    Type: 'AWS::SSM::Document'
+
+    Properties:
+
+      DocumentType: 'Automation'
+
+      Content:
+
+        schemaVersion: '0.3'
+
+        description: SSM Automation - Create Instance Post Migration (base).
+
+        assumeRole: '{{ AutomationAssumeRole }}'
+
+        parameters:
+
+          AutomationAssumeRole:
+
+            type: String
+
+            description: >-
+
+              (Required) The ARN of the role that allows Automation to perform the
+
+              actions on your behalf.
+
+            default: 'arn:aws:iam::026158001388:role/SSM-Automation'
+
+          WKS:
+
+            type: String
+
+            description: (Optional) ws id passed to RunCommand
+
+        mainSteps:
+
+          - name: LaunchInstances
+
+            action: 'aws:executeAwsApi'
+
+            maxAttempts: 3
+
+            onFailure: Continue
+
+            timeoutSeconds: 7200
+
+            inputs:
+
+              Service: ec2
+
+              Api: RunInstances
+
+              ImageId: "{{WKS}}"
+
+              InstanceType: t3.medium
+
+              UserData: 'IyEvYmluL2Jhc2gKc25hcCBpbnN0YWxsIGFtYXpvbi1zc20tYWdlbnQgLS1jbGFzc2ljICYmICBzeXN0ZW1jdGwgc3RhcnQgc25hcC5hbWF6b24tc3NtLWFnZW50LmFtYXpvbi1zc20tYWdlbnQuc2VydmljZQo8cGVyc2lzdD50cnVlPC9wZXJzaXN0Pg=='
+
+              IamInstanceProfile: 
+
+                Name: 'EC2Role-Admin'
+
+              SubnetId: 'subnet-019a4934152bb2c1b'
+
+              MaxCount: 1
+
+              MinCount: 1
+
+              TagSpecifications:
+
+              - ResourceType: instance
+
+                Tags:
+
+                - Key: Name
+
+                  Value: SummitAWSParis
+
+            outputs:
+
+            - Name: InstanceId
+
+              Selector: "$.Instances[0].InstanceId"
+
+              Type: "String"
+
+          - name: waitUntilInstanceStateRunning
+
+            action: aws:waitForAwsResourceProperty
+
+            timeoutSeconds: 60
+
+            inputs:
+
+              Service: ec2
+
+              Api: DescribeInstanceStatus
+
+              InstanceIds:
+
+              - "{{ LaunchInstances.InstanceId }}"
+
+              PropertySelector: "$.InstanceStatuses[0].InstanceState.Name"
+
+              DesiredValues:
+
+              - running
+
+          - name: GetHostname
+
+            action: 'aws:runCommand'
+
+            maxAttempts: 3
+
+            onFailure: Continue
+
+            timeoutSeconds: 600
+
+            inputs:
+
+              DocumentName: AWS-RunShellScript
+
+              InstanceIds:
+
+                - '{{LaunchInstances.InstanceId}}'
+
+              Parameters:
+
+                commands:
+
+                  - '#!/bin/bash'
+
+                  - 'sudo apt install awscli -y'
+
+                  - 'sudo apt install cloud-utils -y'
+
+                  -  EC2_IP=('ec2metadata --local-ipv4')
+
+                  -  EC2_ID=('ec2metadata --instance-id')
+
+                  - 'value=(hostname)'
+
+                  - 'aws ssm put-parameter --type String --name `$value` --value `$EC2_IP` --region eu-west-1 --overwrite --debug'
+
+                  - 'aws ec2 create-tags --resources `$EC2_ID` --tags Key=Type,Value=`$value` --region eu-west-1 --debug'
+
+              CloudWatchOutputConfig:
+
+                CloudWatchLogGroupName: Summit-AWSParis-BaseParams-v2
+
+                CloudWatchOutputEnabled: true
+
+  MigrationDocument2:
+
+    Type: 'AWS::SSM::Document'
+
+    Properties:
+
+      DocumentType: 'Automation'
+
+      Content:
+
+        schemaVersion: '0.3'
+
+        description: SSM Automation - Create connexion string for database (2).
+
+        assumeRole: '{{ AutomationAssumeRole }}'
+
+        parameters:
+
+          AutomationAssumeRole:
+
+            type: String
+
+            description: >-
+
+              (Required) The ARN of the role that allows Automation to perform the
+
+              actions on your behalf.
+
+            default: 'arn:aws:iam::315890322502:role/SummitParis2019SsmRole'
+
+          WKS:
+
+            type: String
+
+            description: (Optional) Instance Id
+
+        mainSteps:
+
+          - name: UpdateDBInfo
+
+            action: 'aws:runCommand'
+
+            maxAttempts: 3
+
+            onFailure: Continue
+
+            timeoutSeconds: 600
+
+            inputs:
+
+              DocumentName: AWS-RunShellScript
+
+              InstanceIds:
+
+                - '{{WKS}}'
+
+              Parameters:
+
+                commands:
+
+                  - 'sudo apt install awscli -y'
+
+                  - 'string=''aws ssm get-parameter --name sql-server-summit --region eu-west-1 --query Parameter.Value --output text'''
+
+                  - 'sudo sed -i s/192.168.1.39/`$string`/g /var/www/wordpress/wp-config.php'
+
+              CloudWatchOutputConfig:
+
+                CloudWatchLogGroupName: Summit-AWSParis-DBSTRING-v2
+
+                CloudWatchOutputEnabled: true
+
+          - outputs:
+
+              - Type: String
+
+                Name: TargetGroupResponse
+
+                Selector: '$.TargetGroups[0].TargetGroupArn'
+
+            inputs:
+
+              VpcId: vpc-389d155e
+
+              Port: 80
+
+              TargetType: instance
+
+              Service: elbv2
+
+              Api: CreateTargetGroup
+
+              Protocol: HTTP
+
+              Name: AutomationTargetGroup
+
+            name: CreateTargetGroup
+
+            action: 'aws:executeAwsApi'
+
+            onFailure: Abort
+
+          - inputs:
+
+              TargetGroupArn: '{{ CreateTargetGroup.TargetGroupResponse }}'
+
+              Service: elbv2
+
+              Targets:
+
+                - Id: '{{ WKS }}'
+
+              Api: RegisterTargets
+
+            name: RegisterIntance
+
+            action: 'aws:executeAwsApi'
+
+            onFailure: Abort
+
+  MyEventRole1:
+
+    Type: "AWS::IAM::Role"
+
+    Properties:
+
+      AssumeRolePolicyDocument:
+
+        Version: "2012-10-17"
+
+        Statement:
+
+          - Effect: "Allow"
+
+            Principal:
+
+              Service:
+
+                - "events.amazonaws.com"
+
+            Action:
+
+              - "sts:AssumeRole"
+
+      Policies:
+
+        - PolicyName: "ExecAutomation"
+
+          PolicyDocument:
+
+            Version: "2012-10-17"
+
+            Statement:
+
+              - Effect: "Allow"
+
+                Action:
+
+                  - "iam:PassRole"
+
+                Resource: !Ref "IAMAutomationRole"
+
+                Condition:
+
+                  StringLikeIfExists:
+
+                    'iam:PassedToService': ssm.amazonaws.com
+
+              - Effect: "Allow"
+
+                Action:
+
+                  - "ssm:StartAutomationExecution"
+
+                Resource: !Join
+
+                      - ''
+
+                      - - 'arn:aws:ssm:'
+
+                        - !Ref 'AWS::Region'
+
+                        - ':'
+
+                        - !Ref 'AWS::AccountId'
+
+                        - ':'
+
+                        - automation-definition/
+
+                        - !Ref MigrationDocument1
+
+                        - ':'
+
+                        - $DEFAULT
+
+  MyEventRole2:
+
+    Type: "AWS::IAM::Role"
+
+    Properties:
+
+      AssumeRolePolicyDocument:
+
+        Version: "2012-10-17"
+
+        Statement:
+
+          - Effect: "Allow"
+
+            Principal:
+
+              Service:
+
+                - "events.amazonaws.com"
+
+            Action:
+
+              - "sts:AssumeRole"
+
+      Policies:
+
+        - PolicyName: "ExecAutomation"
+
+          PolicyDocument:
+
+            Version: "2012-10-17"
+
+            Statement:
+
+              - Effect: "Allow"
+
+                Action:
+
+                  - "iam:PassRole"
+
+                Resource: !Ref "IAMAutomationRole"
+
+                Condition:
+
+                  StringLikeIfExists:
+
+                    'iam:PassedToService': ssm.amazonaws.com
+
+              - Effect: "Allow"
+
+                Action:
+
+                  - "ssm:StartAutomationExecution"
+
+                Resource: !Join
+
+                      - ''
+
+                      - - 'arn:aws:ssm:'
+
+                        - !Ref 'AWS::Region'
+
+                        - ':'
+
+                        - !Ref 'AWS::AccountId'
+
+                        - ':'
+
+                        - automation-definition/
+
+                        - !Ref MigrationDocument2
+
+                        - ':'
+
+                        - $DEFAULT                      
+
+Outputs:
+
+  DocumentName1: 
+
+    Description: 'Document1'
+
+    Value: !Ref MigrationDocument1
+
+  DocumentName2:
+
+    Description: 'Document1'
+
+    Value: !Ref MigrationDocument2
