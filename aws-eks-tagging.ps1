@@ -12,8 +12,16 @@ Write-Host (ConvertTo-Json -InputObject $LambdaInput -Compress -Depth 5)
     $SSMPath = "/MAP2/"
 
 #Retrieve EKS node group name
+$vJson = ($LambdaInput | ConvertFrom-Json )
+   $value = ($vJson.detail.requestParameters.tags | Where-Object key -eq eks:cluster-name).Value
 
-Write-Host $LambdaInput.requestParameters.tags
+if ( $value -like    )
+
+
+# Print EKS Tags
+Write-Host $vJson.detail.requestParameters.tags
+
+
 
 #Retrieve Cluster Tagging 
 $EKSClusterList = (Get-EKSClusterList)
@@ -60,108 +68,109 @@ $EKSTags.Key = (Get-SSMParameter -Name /MAP2/)
 
 
 $LambdaInput = '{
-    "version":"0",
-    "id":"10982cb2-23ec-8dfb-4526-30e9b168d098",
-    "detail-type":"AWS API Call via CloudTrail",
-    "source":"aws.autoscaling",
-    "account":"026158001388",
-    "time":"2020-06-26T11:55:37Z",
-    "region":"eu-west-1",
-    "resources":[
+   "version":"0",
+   "id":"b863f19e-5164-a3e0-e81e-821bdb5c01ff",
+   "detail-type":"AWS API Call via CloudTrail",
+   "source":"aws.autoscaling",
+   "account":"026158001388",
+   "time":"2020-07-23T12:32:30Z",
+   "region":"eu-west-1",
+   "resources":[
+
+   
+],
+   "detail":{
+      "eventVersion":"1.05",
+      "userIdentity":{
+         "type":"AssumedRole",
+         "principalId":"AROAQMFZDNTWKL6T5ED5E:EKS",
+         "arn":"arn:aws:sts::026158001388:assumed-role/AWSServiceRoleForAmazonEKSNodegroup/EKS",
+         "accountId":"026158001388",
+         "accessKeyId":"ASIAQMFZDNTWERKPOT3D",
+         "sessionContext":{
+            "sessionIssuer":{
+               "type":"Role",
+               "principalId":"AROAQMFZDNTWKL6T5ED5E",
+               "arn":"arn:aws:iam::026158001388:role/aws-service-role/eks-nodegroup.amazonaws.com/AWSServiceRoleForAmazonEKSNodegroup",
+               "accountId":"026158001388",
+               "userName":"AWSServiceRoleForAmazonEKSNodegroup"
+            
+},
+            "webIdFederationData":{
+
+            
+},
+            "attributes":{
+               "mfaAuthenticated":"false",
+               "creationDate":"2020-07-23T12:32:29Z"
+            
+}
+         
+},
+         "invokedBy":"eks-nodegroup.amazonaws.com"
+      
+},
+      "eventTime":"2020-07-23T12:32:30Z",
+      "eventSource":"autoscaling.amazonaws.com",
+      "eventName":"CreateAutoScalingGroup",
+      "awsRegion":"eu-west-1",
+      "sourceIPAddress":"eks-nodegroup.amazonaws.com",
+      "userAgent":"eks-nodegroup.amazonaws.com",
+      "requestParameters":{
+         "healthCheckGracePeriod":15,
+         "desiredCapacity":2,
+         "minSize":2,
+         "terminationPolicies":[
+            "OldestLaunchTemplate",
+            "OldestInstance"
+         
+],
+         "tags":[
+            {
+               "key":"kubernetes.io/cluster/map-cluster1",
+               "value":"owned"
+            
+},
+            {
+               "key":"k8s.io/cluster-autoscaler/enabled",
+               "value":"true"
+            
+},
+            {
+               "key":"k8s.io/cluster-autoscaler/map-cluster1",
+               "value":"owned"
+            
+},
+            {
+               "key":"eks:cluster-name",
+               "value":"map-cluster1"
+            
+},
+            {
+               "key":"eks:nodegroup-name",
+               "value":"map-node"
+            
+}
+         
+],
+         "maxSize":2,
+         "vPCZoneIdentifier":"subnet-019a4934152bb2c1b,subnet-05015223701611d80,subnet-03e082bef26e65a2e,subnet-0cce189d81c9b634e",
+         "autoScalingGroupName":"eks-9cb9bdd4-45cc-6847-fca1-c4536ddf9c7c",
+         "healthCheckType":"EC2",
+         "launchTemplate":{
+            "launchTemplateId":"lt-0165c6c86eec7aa7e",
+            "version":"1"
+         
+}
+      
+},
+      "responseElements":null,
+      "requestID":"561fe360-8cd5-4d03-92a1-1421fce5976a",
+      "eventID":"cd566042-34d9-4ec8-8e49-b282459ec79b",
+      "eventType":"AwsApiCall"
+   
+}
+}'
+
  
-    
- ],
-    "detail":{
-       "eventVersion":"1.05",
-       "userIdentity":{
-          "type":"AssumedRole",
-          "principalId":"AROAQMFZDNTWKL6T5ED5E:EKS",
-          "arn":"arn:aws:sts::026158001388:assumed-role/AWSServiceRoleForAmazonEKSNodegroup/EKS",
-          "accountId":"026158001388",
-          "accessKeyId":"ASIAQMFZDNTWERTVR2UL",
-          "sessionContext":{
-             "sessionIssuer":{
-                "type":"Role",
-                "principalId":"AROAQMFZDNTWKL6T5ED5E",
-                "arn":"arn:aws:iam::026158001388:role/aws-service-role/eks-nodegroup.amazonaws.com/AWSServiceRoleForAmazonEKSNodegroup",
-                "accountId":"026158001388",
-                "userName":"AWSServiceRoleForAmazonEKSNodegroup"
-             
- },
-             "webIdFederationData":{
  
-             
- },
-             "attributes":{
-                "mfaAuthenticated":"false",
-                "creationDate":"2020-06-26T11:55:35Z"
-             
- }
-          
- },
-          "invokedBy":"eks-nodegroup.amazonaws.com"
-       
- },
-       "eventTime":"2020-06-26T11:55:37Z",
-       "eventSource":"autoscaling.amazonaws.com",
-       "eventName":"CreateAutoScalingGroup",
-       "awsRegion":"eu-west-1",
-       "sourceIPAddress":"eks-nodegroup.amazonaws.com",
-       "userAgent":"eks-nodegroup.amazonaws.com",
-       "errorCode":"ValidationException",
-       "errorMessage":"You must use a valid fully-formed launch template. Value (eks-dab9783d-c8b0-35a1-d12d-04837fc2605e) for parameter iamInstanceProfile.name is invalid. Invalid IAM Instance Profile name",
-       "requestParameters":{
-          "healthCheckGracePeriod":15,
-          "desiredCapacity":2,
-          "minSize":2,
-          "terminationPolicies":[
-             "OldestLaunchTemplate",
-             "OldestInstance"
-          
- ],
-          "tags":[
-             {
-                "key":"kubernetes.io/cluster/map-eks-cluster",
-                "value":"owned"
-             
- },
-             {
-                "key":"k8s.io/cluster-autoscaler/enabled",
-                "value":"true"
-             
- },
-             {
-                "key":"k8s.io/cluster-autoscaler/map-eks-cluster",
-                "value":"owned"
-             
- },
-             {
-                "key":"eks:cluster-name",
-                "value":"map-eks-cluster"
-             
- },
-             {
-                "key":"eks:nodegroup-name",
-                "value":"eks-node-map"
-             
- }
-          
- ],
-          "maxSize":2,
-          "vPCZoneIdentifier":"subnet-019a4934152bb2c1b,subnet-05015223701611d80,subnet-03e082bef26e65a2e,subnet-0cce189d81c9b634e",
-          "autoScalingGroupName":"eks-dab9783d-c8b0-35a1-d12d-04837fc2605e",
-          "healthCheckType":"EC2",
-          "launchTemplate":{
-             "launchTemplateId":"lt-042ff79cbdc0330f4",
-             "version":"1"
-          
- }
-       
- },
-       "responseElements":null,
-       "requestID":"f999205c-309b-4f64-b083-53bef02f9dc6",
-       "eventID":"487f72d2-8426-4da9-8bd5-e8851df52263",
-       "eventType":"AwsApiCall"
-    
- }
- }'
