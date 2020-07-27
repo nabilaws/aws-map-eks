@@ -7,7 +7,7 @@ Resources:
     Properties:
       Handler: 'aws-eks-tagging::aws_eks_tagging.Bootstrap::ExecuteFunction'
       Runtime: dotnetcore3.1
-      CodeUri: 's3://migrationbootcamp/MAP-EKS-TAG-LAMBDA-v0.99.zip'
+      CodeUri: 's3://migrationbootcamp/MAP-EKS-TAG-LAMBDA-v0.9911.zip'
       Description: 'Automaticaly copy your MAP tags for EKS Resources'
       MemorySize: 512
       Timeout: 90
@@ -17,7 +17,8 @@ Resources:
           - Sid: AllowASGTags
             Effect: Allow
             Action:
-            - autoscaling:CreateOrUpdateTags
+            - autoscaling:*
+            - eks:* 
             Resource: "*"
   CWECatcher:
     Type: 'AWS::Events::Rule'
@@ -31,6 +32,8 @@ Resources:
         detail:
           eventSource:
             - "autoscaling.amazonaws.com"
+          eventName:
+            - "CreateAutoScalingGroup"
           userIdentity:
             invokedBy:
               - "eks-nodegroup.amazonaws.com"
@@ -45,7 +48,7 @@ Resources:
         - Arn: 'arn:aws:sns:eu-west-1:026158001388:SecOps'
           Id: 'SNSTarget'
   PermissionForEventsToInvokeLambda:
-    Type: AWS::Lambda::Permission
+    Type: AWS::Lambda::Permission 
     Properties: 
       FunctionName: 
         Ref: "SAMEKS4MAP"

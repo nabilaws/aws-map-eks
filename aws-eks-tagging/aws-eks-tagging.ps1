@@ -7,12 +7,20 @@
 #3: Customer need to refresh node group instances or wait for recycle
 #Print Event
 Write-Host (ConvertTo-Json -InputObject $LambdaInput -Compress -Depth 5)
+Write-Host $LambdaInput.detail
+Write-Host $LambdaInput.detail.requestParameters.tags
 #Catch the ASG Creation from EKS Node Service
-$vJson = ($LambdaInput | ConvertFrom-Json )
+$vJson = (ConvertTo-Json -InputObject $LambdaInput -Compress -Depth 5)
+Write-Host $vJson
+#$vJson = ($vJson | ConvertTo-Json )
 #Find EKS Node Name
+Write-Host $vJson.detail
+Write-Host $vJson.detail.requestParameters
    $NodeName = ($vJson.detail.requestParameters.tags | Where-Object key -eq eks:nodegroup-name).Value
    $ClusterName = ($vJson.detail.requestParameters.tags | Where-Object key -eq eks:cluster-name).Value
+Write-Host $NodeName $ClusterName   
 #Retrieve Cluster Tagging 
+Get-EKSNodegroupList -ClusterName $ClusterName
 $MAPTagValue = (Get-EKSNodegroup -ClusterName $ClusterName -NodegroupName $NodeName).Tags.Values
 #Prepare AS Tags
 $EKSTags = (New-Object Amazon.AutoScaling.Model.Tag)
