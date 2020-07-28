@@ -25,13 +25,20 @@ Write-Host $vJson2 -Verbose
 #$vJson = ($vJson | ConvertTo-Json )
 #Find EKS Node Name
 
-####!!!!! Logic not working for every case !!!! 
-   $NodeName = ($vJson2.detail.requestParameters.tags.key | Where-Object key -eq eks:nodegroup-name).Value
-   $ClusterName = ($vJson2.detail.requestParameters.tags.value | Where-Object key -eq eks:cluster-name).Value
+
+foreach ($list in $vJson2.detail.requestParameters.tags) {
+   if ($list.key -eq "eks:cluster-name") {
+      $ClusterName = $list.value
+   }   
+}
+Get-EKSCluster -Name $ClusterName
+
+
+   $NodeName = 
    Write-Information -MessageData "Node and Cluster names from tags"
 Write-Host $NodeName $ClusterName   
 #Retrieve Cluster Tagging 
-Get-EKSNodegroupList -ClusterName $ClusterName
+
 $MAPTagValue = (Get-EKSNodegroup -ClusterName $ClusterName -NodegroupName $NodeName).Tags.Values
 #Prepare AS Tags
 $EKSTags = (New-Object Amazon.AutoScaling.Model.Tag)
@@ -42,3 +49,9 @@ $EKSTags.Value = $MAPTagValue
 $EKSTags.PropagateAtLaunch = $true
 #Aplpy Tags to ASG for future launch
 Set-ASTag -Tag $EKSTags
+foreach ($list in $vJson2.detail.requestParameters.tags) {
+   if ($list.key -eq "eks:nodegroup-name") {
+      Write-Host $list.value
+   
+   }   
+}
