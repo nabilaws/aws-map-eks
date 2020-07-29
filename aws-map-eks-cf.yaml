@@ -7,7 +7,7 @@ Resources:
     Properties:
       Handler: 'aws-eks-tagging::aws_eks_tagging.Bootstrap::ExecuteFunction'
       Runtime: dotnetcore3.1
-      CodeUri: 's3://migrationbootcamp/MAP-EKS-TAG-LAMBDA-v0.995.zip'
+      CodeUri: 's3://migrationbootcamp/MAP-EKS-TAG-LAMBDA-v0.996.zip'
       Description: 'Automaticaly copy your MAP tags for EKS Resources'
       MemorySize: 512
       Timeout: 90
