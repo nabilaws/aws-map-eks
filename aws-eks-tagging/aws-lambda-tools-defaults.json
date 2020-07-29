@@ -11,5 +11,6 @@
     "function-role"        : "",
     "tracing-mode"         : "",
     "environment-variables" : "",
-    "apply-defaults"        : true
+    "apply-defaults"        : true,
+    "PublishReadyToRun"     : true
 }
