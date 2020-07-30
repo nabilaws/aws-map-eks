@@ -29,4 +29,10 @@ $EKSTags.Key = "map-migrated"
 $EKSTags.Value = $MAPTagValue
 $EKSTags.PropagateAtLaunch = $true
 #Aplpy Tags to ASG for future launch 
+#Too quick for ASG creation - throttle 
+Get-ASAutoScalingGroup -AutoScalingGroupName $EKSTags.ResourceId -Verbose
+if (condition) {
+   
+}
+
 $ModASG = Set-ASTag -Tag $EKSTags -Verbose
