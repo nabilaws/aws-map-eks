@@ -12,7 +12,7 @@ try {
 catch {
    Write-Host $($_.exception.message)
 }
-if($NodeName -eq $ ""){
+if($NodeName -eq ""){
    Write-Error "Dong! Json not deserialized"
 }
 else {
@@ -28,11 +28,21 @@ $EKSTags.ResourceId = $LambdaInput.detail.requestParameters.autoScalingGroupName
 $EKSTags.Key = "map-migrated"
 $EKSTags.Value = $MAPTagValue
 $EKSTags.PropagateAtLaunch = $true
-#Aplpy Tags to ASG for future launch 
-#Too quick for ASG creation - throttle 
-Get-ASAutoScalingGroup -AutoScalingGroupName $EKSTags.ResourceId -Verbose
-if (condition) {
-   
+#Apply tags to ASG for future launch
+Write-Host "Tempo for 5 seconds"
+Start-Sleep -Seconds 5 
+try{
+   $eksASG = (Get-ASAutoScalingGroup -AutoScalingGroupName $EKSTags.ResourceId -Verbose -ErrorAction Continue)
+}
+Catch{
+   Write-Host $($_.exception.message)
+}
+Write-Host "Applying" $EKSTags.Key "with value" $EKSTags.Value "to" $EKSTags.ResourceId
+try {
+   Set-ASTag -Tag $EKSTags -Verbose -ErrorAction Continue
+}
+catch {
+   Write-Error $($_.exception.message)
+   Write-Error "Error applying tags to auto scaling group review previous error messages"
 }
 
-$ModASG = Set-ASTag -Tag $EKSTags -Verbose
