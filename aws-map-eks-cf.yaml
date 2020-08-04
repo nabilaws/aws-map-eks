@@ -7,18 +7,24 @@ Resources:
     Properties:
       Handler: 'aws-eks-tagging::aws_eks_tagging.Bootstrap::ExecuteFunction'
       Runtime: dotnetcore3.1
-      CodeUri: 's3://migrationbootcamp/MAP-EKS-TAG-LAMBDA-v0.996.zip'
+      CodeUri: 's3://migrationbootcamp/MAP-EKS-TAG-LAMBDA-v1.zip'
       Description: 'Automaticaly copy your MAP tags for EKS Resources'
       MemorySize: 512
       Timeout: 90
       Policies:
         - AWSLambdaExecute
         - Statement:
-          - Sid: AllowASGTags
+          - Sid: ASGPolicy
             Effect: Allow
             Action:
-            - autoscaling:*
-            - eks:* 
+            - autoscaling:CreateOrUpdateTags
+            - autoscaling:DescribeAutoScalingGroups
+            - autoscaling:DescribeAutoScalingInstances
+            - autoscaling:DescribeTags
+            - eks:Describe*
+            - eks:List*
+            - ec2:Describe*
+            - ec2:CreateTags
             Resource: "*"
   CWECatcher:
     Type: 'AWS::Events::Rule'
