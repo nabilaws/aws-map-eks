@@ -51,8 +51,6 @@ Resources:
               - "SAMEKS4MAP"
               - "Arn"
           Id: "eks-map-tag-function"
-        - Arn: 'arn:aws:sns:eu-west-1:026158001388:SecOps'
-          Id: 'SNSTarget'
   PermissionForEventsToInvokeLambda:
     Type: AWS::Lambda::Permission 
     Properties: 
