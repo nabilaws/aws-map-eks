@@ -3,12 +3,12 @@
  
  **CloudFormation with SAM**
 
-Launch the following template:
+Launch the following template to deploy the Serverless Application Model (https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/what-is-sam.html)
 
 https://github.com/nabilaws/aws-map-eks/blob/master/aws-map-eks-cf.yaml
 
 *Resources created:*
- - EventBridge rule with the following pattern
+ - EventBridge rule to catch the event of Amazon EKS creating a node group (call to the ec2.autoscaling API)
  
  ```yaml
       EventPattern:
@@ -27,6 +27,27 @@ https://github.com/nabilaws/aws-map-eks/blob/master/aws-map-eks-cf.yaml
 
 ```
   - IAM Role 
+
+Permissions required to run the function:
+
+```yaml
+
+          - Sid: ASGPolicy
+            Effect: Allow
+            Action:
+            - autoscaling:CreateOrUpdateTags
+            - autoscaling:DescribeAutoScalingGroups
+            - autoscaling:DescribeAutoScalingInstances
+            - autoscaling:DescribeTags
+            - eks:Describe*
+            - eks:List*
+            - ec2:Describe*
+            - ec2:CreateTags
+            Resource: "*"
+
+```
  ....
 
-TBC
+The AWS Lambda function itself is written is PowerShell/.NET Core 
+https://github.com/nabilaws/aws-map-eks/blob/master/aws-eks-tagging.ps1
+
