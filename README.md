@@ -46,8 +46,17 @@ Permissions required to run the function:
             Resource: "*"
 
 ```
+  - AWS Lambda function
  ....
 
-The AWS Lambda function itself is written is PowerShell/.NET Core 
+/!\ This Function is limited to map-migrated tags - feel free to modify for your needs /!\
+
+The AWS Lambda function itself is written is PowerShell/.NET Core.
+
+CloudTrail event trigger the AWS Lambda function to modify the AutoScaling group created by Amazon EKS for the compute node.
+
+The function will copy the Amazon EKS Cluster Tags (map-migrated) to the underlying EC2 resources created by the autoscaling group.
+
+
 https://github.com/nabilaws/aws-map-eks/blob/master/aws-eks-tagging.ps1
 
