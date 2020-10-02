@@ -3,7 +3,7 @@
 
 This solution copy the tags you apply at the Amazon EKS node () creation to the underlying EC2 instances.
 
-https://github.com/nabilaws/aws-map-eks/blob/master/images/node_tags.png
+![nodetags](https://github.com/nabilaws/aws-map-eks/blob/master/images/node_tags.png?raw=true)
 
 
  **CloudFormation with SAM**
