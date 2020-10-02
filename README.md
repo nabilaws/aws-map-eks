@@ -1,14 +1,22 @@
 # aws-map-eks
- EKS Automation for MAP2.0
- 
+ Amazon EKS Automation - Tags
+
+This solution copy the tags you apply at the Amazon EKS node () creation to the underlying EC2 instances.
+
+![node_tags](https://github.com/nabilaws/aws-map-eks/images/node_tags.png)
+
+
  **CloudFormation with SAM**
 
 Launch the following template to deploy the Serverless Application Model (https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/what-is-sam.html)
 
 https://github.com/nabilaws/aws-map-eks/blob/master/aws-map-eks-cf.yaml
 
-*Resources created:*
- - EventBridge rule to catch the event of Amazon EKS creating a node group (call to the ec2.autoscaling API)
+**Resources created:**
+ - EventBridge 
+ 
+ Rule to catch the event of Amazon EKS creating a node group (call to the ec2.autoscaling API)
+
  
  ```yaml
       EventPattern:

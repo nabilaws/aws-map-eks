@@ -18,8 +18,9 @@ else {
    Write-Information -Message "Node and Cluster names from tags"
    Write-Host $NodeName $ClusterName         
 }
-#Retrieve Cluster Tagging 
-$MAPTagValue = (Get-EKSNodegroup -ClusterName $ClusterName -NodegroupName $NodeName).Tags.Values
+#Retrieve node tagging 
+$MAPTagValue = (Get-EKSNodegroup -ClusterName $ClusterName -NodegroupName $NodeName).Tags.Values | Where-Object key -eq "map-migrated"
+
 #Prepare AS Tags
 $EKSTags = (New-Object Amazon.AutoScaling.Model.Tag)
 $EKSTags.ResourceType = "auto-scaling-group"
@@ -32,7 +33,7 @@ Write-Host "Tempo for 5 seconds"
 Start-Sleep -Seconds 5 
 try{
    $eksASG = (Get-ASAutoScalingGroup -AutoScalingGroupName $EKSTags.ResourceId -Verbose -ErrorAction Continue)
-   Write-Host $eksASG.Instances.
+   Write-Host $eksASG.Instances
 }
 Catch{
    Write-Host $($_.exception.message)
