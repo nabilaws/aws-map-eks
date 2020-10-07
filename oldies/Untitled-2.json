@@ -81,14 +81,14 @@
  },
              {
                 "key":"eks:nodegroup-name",
-                "value":"eks-node-map"
+                "value":"compute_node_1"
              
  }
           
  ],
           "maxSize":2,
           "vPCZoneIdentifier":"subnet-019a4934152bb2c1b,subnet-05015223701611d80,subnet-03e082bef26e65a2e,subnet-0cce189d81c9b634e",
-          "autoScalingGroupName":"eks-dab9783d-c8b0-35a1-d12d-04837fc2605e",
+          "autoScalingGroupName":"eks-9cba7494-76c2-3f59-b858-b7c0f920cef5",
           "healthCheckType":"EC2",
           "launchTemplate":{
              "launchTemplateId":"lt-042ff79cbdc0330f4",
