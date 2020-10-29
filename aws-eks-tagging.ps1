@@ -57,5 +57,8 @@ Foreach ($EC2List in $EC2inASG)
 {
    Write-Host "Tagging" $EC2List
    New-EC2Tag -Resource $EC2List -Tag $EC2Tag -Verbose
+   $ec2VolumeList = (Get-EC2Volume -Filter @{ Name="attachment.instance-id"; Values= $EC2List}).VolumeId
+   Write-Host "Tagging" $ec2VolumeList
+   New-EC2Tag -Resource $ec2VolumeList -Tag $EC2Tag
 }
 
