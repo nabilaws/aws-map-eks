@@ -1,4 +1,4 @@
-#Requires -Modules @{ModuleName='AWS.Tools.Common';ModuleVersion='4.0.6.0'}
+#Requires -Modules @{ModuleName='AWS.Tools.Common';ModuleVersion='4.1.2.0'}
 #Requires -Module AWS.Tools.EC2, AWS.Tools.AutoScaling, AWS.Tools.EKS
 #1: Tag your EKS Cluster with "map-migrated" and associated value to retrieve it on your EC2 resources
 
@@ -57,8 +57,15 @@ Foreach ($EC2List in $EC2inASG)
 {
    Write-Host "Tagging" $EC2List
    New-EC2Tag -Resource $EC2List -Tag $EC2Tag -Verbose
-   $ec2VolumeList = (Get-EC2Volume -Filter @{ Name="attachment.instance-id"; Values= $EC2List}).VolumeId
-   Write-Host "Tagging" $ec2VolumeList
-   New-EC2Tag -Resource $ec2VolumeList -Tag $EC2Tag
+   $EC2VolumeList = (Get-EC2Volume -Filter @{ Name="attachment.instance-id"; Values= $EC2List}).VolumeId
+   Write-Host "Tagging" $EC2VolumeList
+   New-EC2Tag -Resource $EC2VolumeList -Tag $EC2Tag
+   $ENIList = Get-EC2NetworkInterface -Filter @{ Name="attachment.instance-id"; Values= $EC2inASG}
+   foreach ($ENI in $ENIList.NetworkInterfaceId)
+   {
+      Write-Host "Tagging" $ENI
+      New-EC2Tag -Resource $ENI -Tag $EC2Tag
+   }
+
 }
 
