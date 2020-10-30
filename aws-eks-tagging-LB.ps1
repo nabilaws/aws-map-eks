@@ -56,12 +56,17 @@ $EC2Tag.Value = $EKSTags.Value
 Foreach ($EC2List in $EC2inASG) 
 {
    Write-Host "Tagging" $EC2List
-   New-EC2Tag -Resource $EC2List -Tag $EC2Tag -Verbose
-   #EBS inside EC2 (should be unique)
+   New-EC2Tag -Resource $EC2List -Tag $EC2Tag
+   #EBS inside EC2 loop (should be unique)
    $EC2VolumeList = (Get-EC2Volume -Filter @{ Name="attachment.instance-id"; Values= $EC2List}).VolumeId
    Write-Host "Tagging" $EC2VolumeList
    New-EC2Tag -Resource $EC2VolumeList -Tag $EC2Tag
    $ENIList = Get-EC2NetworkInterface -Filter @{ Name="attachment.instance-id"; Values= $EC2inASG}
+   #ELB inside EC2 loop
+   $ELBList = (Get-ELBLoadBalancer -Select LoadBalancerDescriptions.Instances.InstanceId)
+   if ($EC2inASG )
+
+   }
    #ENI inside EC2 loop
    foreach ($ENI in $ENIList.NetworkInterfaceId)
    {
