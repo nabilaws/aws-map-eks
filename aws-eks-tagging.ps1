@@ -68,6 +68,4 @@ Foreach ($EC2List in $EC2inASG)
       Write-Host "Tagging" $ENI
       New-EC2Tag -Resource $ENI -Tag $EC2Tag
    }
-
 }
-

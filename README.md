@@ -13,7 +13,11 @@ Launch the following template to deploy the Serverless Application Model (https:
 https://github.com/nabilaws/aws-map-eks/blob/master/aws-map-eks-cf.yaml
 
 **Resources created:**
- - EventBridge 
+Overview:
+
+![overview](https://github.com/nabilaws/aws-map-eks/blob/master/images/sum.png?raw=true)
+
+ - **EventBridge Rule**
  
  Rule to catch the event of Amazon EKS creating a node group (call to the ec2.autoscaling API)
 
@@ -34,9 +38,9 @@ https://github.com/nabilaws/aws-map-eks/blob/master/aws-map-eks-cf.yaml
               - "eks-nodegroup.amazonaws.com"
 
 ```
-  - IAM Role 
-
-Permissions required to run the function:
+  - **IAM Role**
+ 
+Permissions required to run the Lambda function:
 
 ```yaml
 
@@ -54,17 +58,20 @@ Permissions required to run the function:
             Resource: "*"
 
 ```
-  - AWS Lambda function
+  - **AWS Lambda function**
  ....
 
 /!\ This Function is limited to map-migrated tags - feel free to modify for your needs /!\
 
-The AWS Lambda function itself is written is PowerShell/.NET Core.
+The AWS Lambda function code is PowerShell/.NET Core.
 
-CloudTrail event trigger the AWS Lambda function to modify the AutoScaling group created by Amazon EKS for the compute node.
+EventBridge event trigger the AWS Lambda function to modify the AutoScaling group created by Amazon EKS for the compute node. It also apply tags to running EC2 in the node group.
+EBS Volumes and ENI are also tagged as the instance.
 
-The function will copy the Amazon EKS Cluster Tags (map-migrated) to the underlying EC2 resources created by the autoscaling group.
+CloudWatch Log Group is also associated to the function.
 
-
+Function Code:
 https://github.com/nabilaws/aws-map-eks/blob/master/aws-eks-tagging.ps1
 
+Function Package:
+https://migrationbootcamp.s3-eu-west-1.amazonaws.com/MAP-EKS-TAG-LAMBDA-v1.2.zip
