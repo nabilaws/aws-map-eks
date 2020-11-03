@@ -12,6 +12,15 @@ parameters:
     type: String
     description: Event Message
 mainSteps:
+  - name: TagValue
+    action: 'aws:executeAwsApi'
+    maxAttempts: 3
+    onFailure: Continue
+    timeoutSeconds: 7200
+    inputs:
+      Service: AutoScaling
+      Api: describe_tags
+      
   - name: TagASG
     action: 'aws:executeAwsApi'
     maxAttempts: 3
@@ -20,7 +29,7 @@ mainSteps:
     inputs:
       Service: AutoScaling
       Api: create_or_update_tags
-      ResourceId: "{{WKS.details.}}"
+      ResourceId: "{{WKS.details.requestParameters.autoScalingGroupName}}"
       Key: map-migrated
       Value: 
       PropagateAtLaunch: True
