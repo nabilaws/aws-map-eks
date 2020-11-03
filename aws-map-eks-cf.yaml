@@ -9,7 +9,7 @@ Resources:
       Runtime: dotnetcore3.1
       CodeUri: 's3://migrationbootcamp/MAP-EKS-TAG-LAMBDA-v1.2.zip'
       Description: 'Automaticaly copy your MAP tags for EKS Resources'
-      MemorySize: 512
+      MemorySize: 128
       Timeout: 90
       Policies:
         - AWSLambdaExecute

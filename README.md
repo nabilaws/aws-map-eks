@@ -13,6 +13,7 @@ Launch the following template to deploy the Serverless Application Model (https:
 https://github.com/nabilaws/aws-map-eks/blob/master/aws-map-eks-cf.yaml
 
 **Resources created:**
+
 Overview:
 
 ![overview](https://github.com/nabilaws/aws-map-eks/blob/master/images/sum.png?raw=true)
@@ -59,7 +60,17 @@ Permissions required to run the Lambda function:
 
 ```
   - **AWS Lambda function**
- ....
+
+The AWS Lambda function is receiving the AWS Auto Scaling creating made by AWS EKS.
+Tags associated to the node group (limited to map-migrated as name) is replicated to Auto Scaling group and already launched EC2 instances, EBS Volumes and ENI.
+Function permision is limited to the policy abvove.
+
+**Cost**
+
+As an event driven solution cost is link to the number EKS node you create.
+Function memory size is set to minimum (128MB) and timeout to 90seconds.
+
+
 
 /!\ This Function is limited to map-migrated tags - feel free to modify for your needs /!\
 
