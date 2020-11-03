@@ -1,5 +1,4 @@
-#Requires -Modules @{ModuleName='AWS.Tools.Common';ModuleVersion='4.1.2.0'}
-#Requires -Module AWS.Tools.EC2, AWS.Tools.AutoScaling, AWS.Tools.EKS
+#Requires -Module AWS.Tools.EC2, AWS.Tools.AutoScaling, AWS.Tools.EKS, AWS.Tools.ElasticLoadBalancing, AWS.Tools.Common
 #1: Tag your EKS Cluster with "map-migrated" and associated value to retrieve it on your EC2 resources
 
 $TagsList = ($LambdaInput.detail.requestParameters.tags)
@@ -21,7 +20,14 @@ else {
 #Retrieve node tagging 
 $MAPTagValueList = (Get-EKSNodegroup -ClusterName $ClusterName -NodegroupName $NodeName).Tags
 $MAPTagValue = $MAPTagValueList.GetEnumerator() | Where-Object Key -eq "map-migrated"
-
+#Check if node is MAP or NOT
+if ($MAPTagValue -ne $null){
+   Write-Host $NodeName "is tagged with map-migrated - continue"
+}
+else {
+   Write-Host "this node is not tagged with map-migratged - stopping"
+   Exit
+}
 #Prepare AS Tags
 $EKSTags = (New-Object Amazon.AutoScaling.Model.Tag)
 $EKSTags.ResourceType = "auto-scaling-group"
@@ -36,7 +42,7 @@ try{
    $eksASG = (Get-ASAutoScalingGroup -AutoScalingGroupName $EKSTags.ResourceId -Verbose -ErrorAction Continue)
    Write-Host $eksASG.Instances
 }
-Catch{
+catch{
    Write-Host $($_.exception.message)
 }
 Write-Host "Applying" $EKSTags.Key "with value" $EKSTags.Value "to" $EKSTags.ResourceId
@@ -53,19 +59,39 @@ $EC2inASG = $eksASG.Instances.InstanceId
 $EC2Tag = New-Object Amazon.EC2.Model.Tag
 $EC2Tag.Key = "map-migrated"
 $EC2Tag.Value = $EKSTags.Value
+#EC2 in ASG Loop
 Foreach ($EC2List in $EC2inASG) 
 {
    Write-Host "Tagging" $EC2List
-   New-EC2Tag -Resource $EC2List -Tag $EC2Tag -Verbose
-   #EBS inside EC2 (should be unique)
+   New-EC2Tag -Resource $EC2List -Tag $EC2Tag
+   #EBS list inside EC2 loop (should be unique)
    $EC2VolumeList = (Get-EC2Volume -Filter @{ Name="attachment.instance-id"; Values= $EC2List}).VolumeId
    Write-Host "Tagging" $EC2VolumeList
    New-EC2Tag -Resource $EC2VolumeList -Tag $EC2Tag
    $ENIList = Get-EC2NetworkInterface -Filter @{ Name="attachment.instance-id"; Values= $EC2inASG}
-   #ENI inside EC2 loop
+   #ELB List inside EC2 loop (should be unique)
+   $ELBList = (Get-ELBLoadBalancer -Select LoadBalancerDescriptions.LoadBalancerName)
+      foreach ($ELB in $ELBList){
+         #Check if Instance is part of an ELB
+         $Check = (Get-ELBLoadBalancer -LoadBalancerName $ELB).Instances.InstanceId -contains $EC2List     
+         If ($Check -eq $true){
+            Write-Host $ELB_EKS
+            $ELBTags = New-Object Amazon.ElasticLoadBalancing.Model.Tag
+            $ELBTags.Key = $EC2Tag.Key
+            $ELBTags.Value = $EKSTags.Value
+            Add-ELBTags -LoadBalancerName $ELB -Tag $ELBTags -Verbose 
+            Write-Host "Tagging" $ELB
+         }
+         else {
+            Write-Host $($_.exception.message)
+            Write-Host "No EC2 instances are part of" $ELB
+         }
+      }
+   #ENI list inside EC2 loop 
    foreach ($ENI in $ENIList.NetworkInterfaceId)
    {
       Write-Host "Tagging" $ENI
       New-EC2Tag -Resource $ENI -Tag $EC2Tag
    }
 }
+
