@@ -16,6 +16,11 @@ https://github.com/nabilaws/aws-map-eks/blob/master/aws-map-eks-cf.yaml
 
 Overview:
 
+**Updates**
+
+AWS ELB part of your deployment solution are also kept in sync with your AWS EKS Compute nodes.
+
+
 ![overview](https://github.com/nabilaws/aws-map-eks/blob/master/images/sum.png?raw=true)
 
  - **EventBridge Rule**
