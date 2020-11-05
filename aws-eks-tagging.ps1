@@ -1,4 +1,4 @@
-#Requires -Module AWS.Tools.EC2, AWS.Tools.AutoScaling, AWS.Tools.EKS, AWS.Tools.ElasticLoadBalancing, AWS.Tools.Common
+#Requires -Module AWS.Tools.EC2, AWS.Tools.AutoScaling, AWS.Tools.EKS, AWS.Tools.ElasticLoadBalancing,AWS.Tools.ElasticLoadBalancingV2, AWS.Tools.Common
 #1: Tag your EKS Cluster with "map-migrated" and associated value to retrieve it on your EC2 resources
 
 $TagsList = ($LambdaInput.detail.requestParameters.tags)
@@ -39,8 +39,17 @@ $EKSTags.PropagateAtLaunch = $true
 Write-Host "Tempo for 5 seconds"
 Start-Sleep -Seconds 5 
 try{
+
+
+
+
    $eksASG = (Get-ASAutoScalingGroup -AutoScalingGroupName $EKSTags.ResourceId -Verbose -ErrorAction Continue)
    Write-Host $eksASG.Instances
+
+
+
+
+   
 }
 catch{
    Write-Host $($_.exception.message)
@@ -84,7 +93,23 @@ Foreach ($EC2List in $EC2inASG)
          }
          else {
             Write-Host $($_.exception.message)
-            Write-Host "No EC2 instances are part of" $ELB
+            Write-Host "No EC2 instances are part of ELB - Checking ALB"
+            $ALBTargets = (Get-ELB2TargetGroup).TargetGroupArn
+            foreach ($Targets in $ALBTargets){
+
+               $TargetIds = (Get-ELB2TargetHealth -TargetGroupArn $Targets).Target.Id
+               if ($TargetIds -contains $EC2List){
+                  $ALBTags = New-Object Amazon.ElasticLoadBalancingV2.Model.Tag
+                  $ALBTags.Key = $EC2Tag.Key
+                  $ALBTags.Value = $EKSTags.Value
+                  Add-ELB2Tag  -ResourceArn $Targets -Tag $ALBTags -Verbose
+                  Write-Host "Tagged Target Group" $Targets
+                  $TargetALBARN = (Get-ELB2TargetGroup -TargetGroupArn $Targets).LoadBalancerArns
+                  Write-Host "Tagging Target Group" $TargetALBARN
+                  Add-ELB2Tag -ResourceArn $TargetALBARN -Tag $ALBTags -Verbose 
+               }
+            }
+
          }
       }
    #ENI list inside EC2 loop 
