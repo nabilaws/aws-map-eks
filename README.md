@@ -1,24 +1,30 @@
 # aws-map-eks
- Amazon EKS Automation - Tags
+ 
+ **Amazon EKS Automation - Tags**
 
-This solution copy the tags you apply at the Amazon EKS node () creation to the underlying EC2 instances.
+This solution copy the tags you apply at the Amazon EKS nodecreation to the underlying EC2 instances, EBS Volumes, ENI and potential load balancers.
+Resources created from the scaling of your nodes are also tagged.
 
 ![nodetags](https://github.com/nabilaws/aws-map-eks/blob/master/images/node_tags.png?raw=true)
 
 
- **CloudFormation with SAM**
+ [**CloudFormation with SAM**]
 
 Launch the following template to deploy the Serverless Application Model (https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/what-is-sam.html)
 
 https://github.com/nabilaws/aws-map-eks/blob/master/aws-map-eks-cf.yaml
 
-**Resources created:**
 
-Overview:
+[**Resources created:**]
+
+[Overview:]
 
 **Updates**
 
-AWS ELB part of your deployment solution are also kept in sync with your AWS EKS Compute nodes.
+
+AWS LoadBalancer attached to your node are also tagged with your map-migrated value.
+NLB and ALB resources supported.
+
 
 
 ![overview](https://github.com/nabilaws/aws-map-eks/blob/master/images/sum.png?raw=true)
@@ -61,6 +67,12 @@ Permissions required to run the Lambda function:
             - eks:List*
             - ec2:Describe*
             - ec2:CreateTags
+            - elasticloadbalancing:DescribeTags
+            - elasticloadbalancing:DescribeLoadBalancerAttributes
+            - elasticloadbalancing:DescribeLoadBalancers
+            - elasticloadbalancing:AddTags
+            - elasticloadbalancing:DescribeTargetHealth
+            - elasticloadbalancing:DescribeTargetGroups
             Resource: "*"
 
 ```
@@ -70,19 +82,20 @@ The AWS Lambda function is receiving the AWS Auto Scaling creating made by AWS E
 Tags associated to the node group (limited to map-migrated as name) is replicated to Auto Scaling group and already launched EC2 instances, EBS Volumes and ENI.
 Function permision is limited to the policy abvove.
 
-**Cost**
+  - **Cost**
 
 As an event driven solution cost is link to the number EKS node you create.
 Function memory size is set to minimum (128MB) and timeout to 90seconds.
 
 
 
-/!\ This Function is limited to map-migrated tags - feel free to modify for your needs /!\
+**/!\ This Function is limited to map-migrated tags - feel free to modify for your needs /!\**
 
 The AWS Lambda function code is PowerShell/.NET Core.
 
-EventBridge event trigger the AWS Lambda function to modify the AutoScaling group created by Amazon EKS for the compute node. It also apply tags to running EC2 in the node group.
+AWS EventBridge event trigger the AWS Lambda function to modify the AutoScaling group created by Amazon EKS for the compute node. It also apply tags to running EC2 in the node group.
 EBS Volumes and ENI are also tagged as the instance.
+
 
 CloudWatch Log Group is also associated to the function.
 
