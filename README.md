@@ -1,4 +1,4 @@
-# aws-map-eks
+## aws-map-eks
  
  **Amazon EKS Automation - Tags**
 
@@ -8,16 +8,16 @@ Resources created from the scaling of your nodes are also tagged.
 ![nodetags](https://github.com/nabilaws/aws-map-eks/blob/master/images/node_tags.png?raw=true)
 
 
- [**CloudFormation with SAM**]
+ # **CloudFormation with SAM**
 
 Launch the following template to deploy the Serverless Application Model (https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/what-is-sam.html)
 
 https://github.com/nabilaws/aws-map-eks/blob/master/aws-map-eks-cf.yaml
 
 
-[**Resources created:**]
+# **Resources created:**
 
-[Overview:]
+# **Overview:**
 
 **Updates**
 
@@ -102,5 +102,5 @@ CloudWatch Log Group is also associated to the function.
 Function Code:
 https://github.com/nabilaws/aws-map-eks/blob/master/aws-eks-tagging.ps1
 
-Function Package:
-https://migrationbootcamp.s3-eu-west-1.amazonaws.com/MAP-EKS-TAG-LAMBDA-v1.2.zip
+Latest function package:
+https://migrationbootcamp.s3-eu-west-1.amazonaws.com/MAP-EKS-TAG-LAMBDA-v1.25.zip
