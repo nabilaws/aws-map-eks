@@ -89,7 +89,7 @@ Function memory size is set to minimum (128MB) and timeout to 90seconds.
 
 
 
-**/!\ This Function is limited to map-migrated tags - feel free to modify for your needs /!\**
+> /!\ This Function is limited to map-migrated tags - feel free to modify for your needs /!\
 
 The AWS Lambda function code is PowerShell/.NET Core.
 
